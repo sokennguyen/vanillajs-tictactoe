@@ -108,11 +108,11 @@ function start()
 	newtable.appendChild(newtr);
 	troot.appendChild(newtable);
 	
-	console.log("We start checking whether anything new has happened in the server side");
+	//console.log("We start checking whether anything new has happened in the server side");
 	/* Note that this is not a very pretty way to update the changes after the arrival: in reality we want callbacks
 	   which reflect the changes on screen right away. Change 5000 to 500, when you tire of waiting...*/
-	console.log("To make the game title visible longer, the initial timing is 5 seconds, not 0.5 seconds.");
-	timeout = setTimeout(timercode, 500);
+	//console.log("To make the game title visible longer, the initial timing is 5 seconds, not 0.5 seconds.");
+	timeout = setTimeout(timercode, 5000);
 }
 
 /*
@@ -216,8 +216,18 @@ function updateTable(statestring)
 	let newtable = document.createElement("table")
 	let newtr = document.createElement("tr")
 	let count = 0
+	let blankCount = 0
+	troot.innerHTML=''
+	let curid = connection.currentIdentity()
+	let idInfo = document.createElement('p')
+	let previousMove = connection.previousMoveBy()
+	let currentTurn = previousMove === 'X' ? 'O' : 'X'
 
-	troot.removeChild(troot.lastChild)
+	if (alreadyClicked) 
+		idInfo.textContent = curid==='X' ? 'wait for O\'s turn' : 'wait for X\'s turn'
+	else 
+		idInfo.textContent = `Click to place a move as ${currentTurn}`
+	troot.appendChild(idInfo)
 
 	newtable.border = 1
 	for (let i = 0 ; i < 3; i++ ){
@@ -227,7 +237,10 @@ function updateTable(statestring)
 
 			let charInBox
 			switch (statestring[count]){
-				case('_'): charInBox=drawe();
+				case('_'):{
+					charInBox=drawe();
+					blankCount++
+				} 
 				break;
 				case('X'): charInBox=drawx();
 				break;
@@ -245,11 +258,20 @@ function updateTable(statestring)
 			}
 			count++
 		}
-		
 	}
+	if (blankCount===0) connection.restartSession()
 	newtable.appendChild(newtr)
 	troot.appendChild(newtable)
 	// console.log(statestring);
+	const resetButton = document.createElement('button')
+	resetButton.onclick=()=>{
+		connection.restartSession()
+		updateTable(statestring)
+	}
+	resetButton.textContent='Restart'
+	troot.appendChild(resetButton)
+	count=0
+	
 }
 
 /*
@@ -267,12 +289,23 @@ function resolveIdAndUpdate(x,y)
 {
 	if (x === 111) 
 	{
-		console.log("So, it seems the logo is still on screen, lets not do anything...");
+		//console.log("So, it seems the logo is still on screen, lets not do anything...");
+		timercode()
 		return "";
 	}
-	console.log("Am I X or O?");
+
+	if (alreadyClicked) {
+		alert('You\'re trying make 2 moves in 1 turn, not fair (-_-)')
+		return ''
+	}
+	if (state[x][y]!==EMPTYT) {
+		alert('The square is already played :D?!')
+		return ""
+	}
+	
+	//console.log("Am I X or O?");
 	let curid = connection.currentIdentity();
-	console.log("Identity in game is " + curid);
+	//console.log("Identity in game is " + curid);
 	if (curid === "")
 	{
 		curid = connection.previousMoveBy();
@@ -339,14 +372,24 @@ function click(x,y)
 		{
 			switch (state[i][j])
 			{
-				case (X_TEXT): statestring += "X"; break;
-				case (O_TEXT): statestring += "O"; break;
-				case (EMPTYT): statestring += "_"; break;
+				case (X_TEXT): {statestring += "X";} break;
+				case (O_TEXT): {statestring += "O";} break;
+				case (EMPTYT): {statestring += "_";} break;
 				default: alert("There's stuff in state that should not be there!?"); return;
 			}
 		}
 	}
 	connection.updateState(statestring);
 	alreadyClicked = true;
+}
+const checkForWin = () => {
+	for (let i = 0; i<3; i++){
 
+		//horizontal
+		if ((state[i][0] !== EMPTYT) &&
+			(state[i][0] === state[i][1]) &&
+			(state[i][0] === state[i][2]))
+			return (state[i][0] == X_TEXT ? 1 : -1) 
+
+	}
 }

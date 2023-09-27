@@ -46,6 +46,34 @@ class Update extends XMLHttpRequest
 				// that callback, in turn, would then handle the screen update?
 				// Or perhaps that one has a callback to handle it (to really have the code in the same file with the
 				// relevant callback)? Design it yourself now!
+				
+				// if (this.myCon.prevstate != this.myCon.statestring)
+				// {
+				// 	console.log("State changed : " + this.myCon.prevstate + " --> " + this.myCon.statestring);
+				// 	this.myCon.prevstate = this.myCon.statestring;
+				// 	if (this.myCon.statestring === this.myCon.sentstate)
+				// 	{
+				// 		if (this.myCon.id === "")
+				// 		{
+				// 			this.myCon.id = this.myCon.sentstate.substring(0,1);
+				// 			console.log("The player took part in the game by making a move");
+				// 			console.log("The player is " + this.myCon.id);
+				// 			console.log("The move was made");
+				// 		}
+				// 		return "B" + this.myCon.statestring;
+				// 	}
+				// 	if (this.myCon.statestring === "O_________")
+				// 	{
+				// 		this.myCon.id = "";
+				// 		this.myCon.sentstate = "";
+				// 	}
+				// 	return this.myCon.statestring;
+				// }
+				// else
+				// {
+				// 	new Retrieve(this, null, null);
+				// 	return "NONEWS";
+				// }
 			}
 
 		}
@@ -63,6 +91,16 @@ class Update extends XMLHttpRequest
 				That means you will need to read the HTTP specification documents for error codes and then
 				just fill in based on that.
 			*/
+			if ((this.readyState === 4) && (this.status === 0))
+				console.log('Cannot Connect To Server');	
+			if ((this.readyState === 4) && (this.status === 404))
+				console.log('Page not found');
+			if ((this.readyState === 4) && (this.status === 0))
+				console.log('Bad Request');
+			if ((this.readyState === 4) && (this.status === 0))
+				console.log('Internal Server Error');
+			
+			
 		}
 	}
 }
@@ -97,6 +135,36 @@ class ServerConnection
 		this.sentstate = data;
 		//Note: URL optional!
 		new Update(this, data);
+	}
+
+	updateUi(){
+		if (this.prevstate != this.statestring)
+		{
+			console.log("State changed : " + this.prevstate + " --> " + this.statestring);
+			this.prevstate = this.statestring;
+			if (this.statestring === this.sentstate)
+			{
+				if (this.id === "")
+				{
+					this.id = this.sentstate.substring(0,1);
+					console.log("The player took part in the game by making a move");
+					console.log("The player is " + this.id);
+					console.log("The move was made");
+				}
+				return "B" + this.statestring;
+			}
+			if (this.statestring === "O_________")
+			{
+				this.id = "";
+				this.sentstate = "";
+			}
+			return this.statestring;
+		}
+		else
+		{
+			new Retrieve(this, null, null);
+			return "NONEWS";
+		}
 	}
 
 	//...and in EXERCISE 4 the callback from business logic activates here? Then parts of the below might become redundant and
