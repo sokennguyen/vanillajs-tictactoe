@@ -126,7 +126,6 @@ function start()
 function timercode()
 {
 	let statestring = connection.fetchState();
-	// console.log(statestring);
 	if (statestring != "NONEWS")
 	{
 		//The first letter of the state is a B (BACK), if the state is the same as the one sent from this machine.
@@ -134,9 +133,9 @@ function timercode()
 		else statestring = statestring.substring(1);
 		updateTable(statestring.substring(1));
 	}	
-	//recursive function this early in the class? (o_O)
-	//maintable get updates every 0.5ms
+	//recursive function? (o_O)
 	timeout = setTimeout(timercode, 100);
+	//after EX4, this timout only serve to affect the waiting player, not the one playing - they get instant refreshes instead
 }
 
 
@@ -210,6 +209,7 @@ EXERCISE 1: Create the drawing function below!
 	   A hint: Start examining the code from the start()-function where the "start up logo" of the game is drawn.
 
 */
+//TODO: fix when player 1 plays, player 2 board refreshes still relies on timercode to update
 function updateTable(statestring)
 {
 	let troot = document.getElementById("maintable")
@@ -309,7 +309,7 @@ function resolveIdAndUpdate(x,y)
 	if (curid === "")
 	{
 		curid = connection.previousMoveBy();
-		console.log("I was not yet in the game, the previous player was " + curid);
+		//console.log("I was not yet in the game, the previous player was " + curid);
 		if (curid === "X") 
 		{
 			state[x][y] = O_TEXT;
@@ -336,7 +336,7 @@ function resolveIdAndUpdate(x,y)
 		}
 	}
 		
-	console.log("I will be or I already am a " + curid);
+	//console.log("I will be or I already am a " + curid);
 	participant = true;
 	return curid;
 }
